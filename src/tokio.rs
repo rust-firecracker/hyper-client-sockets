@@ -4,6 +4,8 @@ use std::{
     os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd},
     task::Poll,
 };
+#[cfg(feature = "vsock")]
+use std::{pin::Pin, task::Context};
 
 #[cfg(any(feature = "unix", feature = "firecracker"))]
 use hyper_util::rt::TokioIo;
@@ -162,11 +164,7 @@ impl TokioVsockIo {
 #[cfg(feature = "vsock")]
 #[cfg_attr(docsrs, doc(cfg(feature = "vsock")))]
 impl hyper::rt::Write for TokioVsockIo {
-    fn poll_write(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-        buf: &[u8],
-    ) -> Poll<Result<usize, std::io::Error>> {
+    fn poll_write(self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<Result<usize, std::io::Error>> {
         loop {
             let mut guard = match self.0.poll_write_ready(cx) {
                 Poll::Ready(Ok(guard)) => guard,
@@ -183,17 +181,11 @@ impl hyper::rt::Write for TokioVsockIo {
         }
     }
 
-    fn poll_flush(
-        self: std::pin::Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> Poll<Result<(), std::io::Error>> {
+    fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
         Poll::Ready(Ok(()))
     }
 
-    fn poll_shutdown(
-        self: std::pin::Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> Poll<Result<(), std::io::Error>> {
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
         Poll::Ready(Ok(()))
     }
 }
@@ -202,8 +194,8 @@ impl hyper::rt::Write for TokioVsockIo {
 #[cfg_attr(docsrs, doc(cfg(feature = "vsock")))]
 impl hyper::rt::Read for TokioVsockIo {
     fn poll_read(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
         mut buf: hyper::rt::ReadBufCursor<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
         let b;

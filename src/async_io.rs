@@ -5,7 +5,7 @@ use std::{
     io::{Read, Write},
     os::fd::{AsRawFd, FromRawFd, IntoRawFd},
     pin::Pin,
-    task::Poll,
+    task::{Context, Poll},
 };
 
 #[cfg(any(feature = "unix", feature = "vsock", feature = "firecracker"))]
@@ -164,11 +164,7 @@ impl AsyncVsockIo {
 #[cfg(feature = "vsock")]
 #[cfg_attr(docsrs, doc(cfg(feature = "vsock")))]
 impl hyper::rt::Write for AsyncVsockIo {
-    fn poll_write(
-        self: Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-        buf: &[u8],
-    ) -> Poll<Result<usize, std::io::Error>> {
+    fn poll_write(self: Pin<&mut Self>, cx: &mut Context<'_>, buf: &[u8]) -> Poll<Result<usize, std::io::Error>> {
         loop {
             match self.0.poll_writable(cx) {
                 Poll::Ready(Ok(_)) => {}
@@ -189,11 +185,11 @@ impl hyper::rt::Write for AsyncVsockIo {
         }
     }
 
-    fn poll_flush(self: Pin<&mut Self>, _cx: &mut std::task::Context<'_>) -> Poll<Result<(), std::io::Error>> {
+    fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
         Poll::Ready(Ok(()))
     }
 
-    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut std::task::Context<'_>) -> Poll<Result<(), std::io::Error>> {
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), std::io::Error>> {
         Poll::Ready(Ok(()))
     }
 }
@@ -203,7 +199,7 @@ impl hyper::rt::Write for AsyncVsockIo {
 impl hyper::rt::Read for AsyncVsockIo {
     fn poll_read(
         self: Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
+        cx: &mut Context<'_>,
         mut buf: hyper::rt::ReadBufCursor<'_>,
     ) -> Poll<Result<(), std::io::Error>> {
         let b;

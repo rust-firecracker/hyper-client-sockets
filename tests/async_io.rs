@@ -8,7 +8,7 @@ use http_body_util::Full;
 use hyper::client::conn::http1::handshake;
 use hyper_client_sockets::{
     async_io::AsyncIoBackend,
-    connector::{firecracker::FirecrackerConnector, unix::UnixConnector, vsock::VsockConnector},
+    connector::{FirecrackerConnector, UnixConnector, VsockConnector},
     uri::{FirecrackerUri, UnixUri, VsockUri},
     Backend,
 };

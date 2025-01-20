@@ -7,7 +7,7 @@ use hyper_util::client::legacy::connect::{Connected, Connection};
 
 /// This is an internal wrapper over an IO type that implements [hyper::rt::Write] and
 /// [hyper::rt::Read] that also implements [Connection] to achieve compatibility with hyper-util.
-pub struct ConnectableIo<IO: hyper::rt::Write + hyper::rt::Read + Send + Unpin>(IO);
+pub struct ConnectableIo<IO>(IO);
 
 impl<IO: hyper::rt::Write + hyper::rt::Read + Send + Unpin> hyper::rt::Write for ConnectableIo<IO> {
     #[inline(always)]
@@ -45,7 +45,7 @@ impl<IO: hyper::rt::Write + hyper::rt::Read + Send + Unpin> Connection for Conne
 
 #[cfg(feature = "unix")]
 #[cfg_attr(docsrs, doc(cfg(feature = "unix")))]
-pub mod unix {
+mod unix {
     use std::{future::Future, marker::PhantomData, pin::Pin, task::Poll};
 
     use http::Uri;
@@ -90,9 +90,13 @@ pub mod unix {
     }
 }
 
+#[cfg(feature = "unix")]
+#[cfg_attr(docsrs, doc(cfg(feature = "unix")))]
+pub use unix::UnixConnector;
+
 #[cfg(feature = "vsock")]
 #[cfg_attr(docsrs, doc(cfg(feature = "vsock")))]
-pub mod vsock {
+mod vsock {
     use std::{future::Future, marker::PhantomData, pin::Pin, task::Poll};
 
     use http::Uri;
@@ -137,9 +141,13 @@ pub mod vsock {
     }
 }
 
+#[cfg(feature = "vsock")]
+#[cfg_attr(docsrs, doc(cfg(feature = "vsock")))]
+pub use vsock::VsockConnector;
+
 #[cfg(feature = "firecracker")]
 #[cfg_attr(docsrs, doc(cfg(feature = "firecracker")))]
-pub mod firecracker {
+mod firecracker {
     use std::{future::Future, marker::PhantomData, pin::Pin, task::Poll};
 
     use http::Uri;
@@ -183,3 +191,7 @@ pub mod firecracker {
         }
     }
 }
+
+#[cfg(feature = "firecracker")]
+#[cfg_attr(docsrs, doc(cfg(feature = "firecracker")))]
+pub use firecracker::FirecrackerConnector;

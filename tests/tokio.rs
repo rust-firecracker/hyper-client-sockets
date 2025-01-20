@@ -4,7 +4,7 @@ use http::{Request, Uri};
 use http_body_util::Full;
 use hyper::client::conn::http1::handshake;
 use hyper_client_sockets::{
-    connector::{firecracker::FirecrackerConnector, unix::UnixConnector, vsock::VsockConnector},
+    connector::{FirecrackerConnector, UnixConnector, VsockConnector},
     tokio::TokioBackend,
     uri::{FirecrackerUri, UnixUri, VsockUri},
     Backend,
